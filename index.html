@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>CalcuRM • Calculadora Olímpica</title>
+  <style>
+    :root{ --bg:#0b1220; --surface:#0f172a; --surface-2:#111827; --text:#e2e8f0; --muted:#94a3b8; --emerald:#10b981; --cyan:#06b6d4; --ring:rgba(16,185,129,.4); }
+    html,body{height:100%} *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding-bottom:calc(96px + env(safe-area-inset-bottom));}
+    .appbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:12px max(16px,env(safe-area-inset-left)) 12px max(16px,env(safe-area-inset-right));background:rgba(11,18,32,.85);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid #1f2937}
+    .appbar__title{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:.2px;font-size:clamp(18px,2.4vw,22px)}
+    .brand{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg, rgba(16,185,129,.85), rgba(6,182,212,.9));box-shadow:0 6px 18px rgba(6,182,212,.25)}
+    .appbar__actions{display:flex;gap:8px}
+    .container{max-width:1024px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 16px 16px}
+    h1{font-size:clamp(20px,3.2vw,28px);margin:.2rem 0 .4rem}.muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent),var(--surface);border:1px solid #1f2937;border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    .section-title{margin:.25rem 0 .5rem;color:#a7f3d0;letter-spacing:.2px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.split{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    input[type="number"],select{background:#0b1220;color:var(--text);border:1px solid #1f2937;border-radius:12px;padding:12px 14px;min-height:48px;outline:none}
+    input:focus,select:focus{border-color:var(--emerald);box-shadow:0 0 0 4px var(--ring)}
+    .btn{min-height:48px;background:linear-gradient(180deg,rgba(16,185,129,.22),rgba(6,182,212,.22));border:1px solid #134e4a;color:var(--text);border-radius:14px;padding:12px 16px;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid #1f2937}.btn:active{transform:scale(.98)}
+    .seg{display:inline-flex;background:#0b1220;border:1px solid #1f2937;border-radius:12px;padding:4px}
+    .seg__btn{min-width:64px;min-height:44px;border-radius:10px;border:none;color:var(--text);background:transparent;padding:8px 12px;cursor:pointer}
+    .seg__btn--active{background:linear-gradient(180deg,rgba(16,185,129,.22),rgba(6,182,212,.22));border:1px solid #134e4a}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}.chip{min-height:40px;padding:8px 12px;border-radius:999px;background:#0b1220;border:1px solid #1f2937;color:var(--text);cursor:pointer}
+    .chip--on{background:linear-gradient(180deg,rgba(16,185,129,.18),rgba(6,182,212,.18));border-color:#134e4a}
+    .kpi-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px}
+    .kpi-card{background:#0b1220;border:1px solid #1f2937;border-radius:14px;padding:12px}
+    .kpi-card span{color:var(--muted);font-size:.9rem}
+    .kpi-card strong{display:block;margin-top:4px;font-size:clamp(18px,2.4vw,24px);transition:transform .16s ease, opacity .16s ease}
+    .pulse{transform:scale(1.02);opacity:.92}
+    .divider{height:1px;background:#1f2937;margin:10px 0}
+    .toolbar{position:fixed;left:0;right:0;bottom:0;background:rgba(2,6,23,.9);backdrop-filter:saturate(140%) blur(8px);border-top:1px solid #1f2937;padding:12px calc(16px + env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-right))}
+    .toolbar .row{justify-content:space-between}
+    @media print{.toolbar,.appbar{display:none}body{background:#fff;color:#000}.card{box-shadow:none;border:1px solid #ddd}}
+  </style>
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar__title"><span class="brand" aria-hidden="true"></span> CalcuRM</div>
+    <div class="appbar__actions">
+      <button class="btn btn-ghost" id="themeToggle" aria-label="Cambiar tema">🌓</button>
+      <button class="btn btn-ghost" id="installBtn" title="Instalar">➕ Instalar</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Calculadora de Levantamientos Olímpicos</h1>
+    <p class="muted">PWA • Offline • Optimizada para iPhone 16 Plus • Safe areas</p>
+
+    <section class="grid" style="margin-top:8px">
+      <div class="card">
+        <h3 class="section-title">1) Barra & Unidades</h3>
+        <div class="row">
+          <label class="muted">Barra</label>
+          <div class="seg" role="tablist" aria-label="Barra" id="segBar">
+            <button class="seg__btn seg__btn--active" data-v="45">45 lb</button>
+            <button class="seg__btn" data-v="35">35 lb</button>
+          </div>
+        </div>
+        <div class="row">
+          <label class="muted">Unidades</label>
+          <div class="seg" role="tablist" aria-label="Unidades" id="segUnits">
+            <button class="seg__btn seg__btn--active" data-v="lb">lb</button>
+            <button class="seg__btn" data-v="kg">kg</button>
+          </div>
+          <div class="chip">Conversión automática lb ⇄ kg</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">3) Discos disponibles</h3>
+        <p class="muted" style="margin-top:-6px">Agrega <b>por un solo lado</b>. La app duplica al otro.</p>
+        <div class="row">
+          <select id="platePicker"></select>
+          <button class="btn" id="addPlate">➕ Añadir disco</button>
+          <button class="btn btn-ghost" id="clearPlates">🗑️ Limpiar</button>
+        </div>
+        <div id="platesList" class="split" style="margin-top:8px">
+          <span class="muted">Sin discos</span>
+          <span></span>
+        </div>
+        <div class="divider"></div>
+        <div class="split"><span class="muted">Peso por lado (solo discos)</span><strong id="sideWeight">0 lb</strong></div>
+        <div class="split"><span class="muted">Peso total (barra + discos)</span><strong id="totalWeight">0 lb</strong></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <h3 class="section-title">5) % del RM</h3>
+      <div class="row">
+        <input type="number" id="rm" placeholder="Ingresa tu 1RM" inputmode="decimal" style="flex:2" />
+        <input type="number" id="percent" placeholder="% objetivo (ej. 80)" inputmode="decimal" />
+        <button class="btn" id="calcRM">Calcular</button>
+      </div>
+      <div class="chips" id="presetChips" style="margin:10px 0"></div>
+      <div class="row">
+        <label class="muted">Redondeo</label>
+        <div class="seg" id="segRound" role="tablist" aria-label="Redondeo">
+          <button class="seg__btn seg__btn--active" data-v="nearest">Más cercano</button>
+          <button class="seg__btn" data-v="down">Abajo</button>
+          <button class="seg__btn" data-v="up">Arriba</button>
+        </div>
+        <button class="btn btn-ghost" id="printRM">🖨️ Exportar %RM</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><span>Objetivo total</span><strong id="rmTarget">—</strong></div>
+        <div class="kpi-card"><span>Por lado (discos)</span><strong id="perSideWeight">—</strong></div>
+        <div class="kpi-card"><span>Desglose por lado</span><strong id="perSideBreakdown">—</strong></div>
+        <div class="kpi-card"><span>Total con barra</span><strong id="rmTotal">—</strong></div>
+      </div>
+      <p class="muted" style="margin:.5rem 0 0">* Incluye la barra seleccionada (45/35 lb). Desglose muestra **número de discos por lado**.</p>
+    </section>
+
+    <section class="row" style="margin-top:12px; gap:10px">
+      <button class="btn" id="printSummary">🖨️ Exportar resumen</button>
+      <div class="chip">iOS: Compartir → “Añadir a pantalla de inicio”.</div>
+    </section>
+
+    <section class="card print-only" style="margin-top:12px">
+      <h3>Resumen para impresión</h3>
+      <div id="printArea"></div>
+    </section>
+  </div>
+
+  <div class="toolbar">
+    <div class="row">
+      <span class="muted">Instálala para usarla offline.</span>
+      <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆️ Arriba</button>
+    </div>
+  </div>
+
+  <script>
+    const PLATES_LB=[45,35,25,15,10,5,2.5,1.25];
+    const KG_PER_LB=0.45359237; const $=s=>document.querySelector(s);
+    const fmt=(v,u)=>`${(Math.round(v*100)/100)} ${u}`;
+    const state={units:'lb', bar:45, oneSidePlates:[], round:'nearest'};
+
+    function toUnits(lb){return state.units==='lb'?lb:lb*KG_PER_LB}
+    function fromUnits(v){return state.units==='lb'?v:v/KG_PER_LB}
+    function countByValue(a){return a.reduce((m,v)=>{m[v]=(m[v]||0)+1;return m;},{});}    
+
+    function bindSegmented(id, onSelect){
+      const root=$(id); root.addEventListener('click',e=>{const btn=e.target.closest('.seg__btn'); if(!btn) return; root.querySelectorAll('.seg__btn').forEach(b=>b.classList.remove('seg__btn--active')); btn.classList.add('seg__btn--active'); onSelect(btn.dataset.v)});
+    }
+
+    function renderPlatePicker(){
+      const opts=PLATES_LB.map(lb=>{const label=state.units==='lb'?`${lb} lb`:`${(lb*KG_PER_LB).toFixed(2)} kg`; return `<option value="${lb}">${label}</option>`}).join('');
+      $('#platePicker').innerHTML=opts;
+    }
+
+    function renderList(){
+      const unit=state.units; const counts=countByValue(state.oneSidePlates);
+      const list=Object.entries(counts).sort((a,b)=>Number(b[0])-Number(a[0])).map(([lb,c])=>{
+        const label=unit==='lb'?`${lb} lb`:`${(lb*KG_PER_LB).toFixed(2)} kg`; return `<div class="split"><span>${c}× ${label} (par)</span><span class="muted">${fmt(toUnits(c*lb),unit)}</span></div>`
+      }).join('')||'<span class="muted">Sin discos</span>';
+      $('#platesList').innerHTML=list;
+      const sideLb=state.oneSidePlates.reduce((a,b)=>a+b,0); $('#sideWeight').textContent=fmt(toUnits(sideLb),state.units);
+      const totalLb=sideLb*2+state.bar; $('#totalWeight').textContent=fmt(toUnits(totalLb),state.units);
+    }
+
+    function gcd(a,b){return b?gcd(b,a%b):a}
+    function gcdArray(arr){return arr.reduce((m,v)=>gcd(Math.round(m*100),Math.round(v*100))/100)}
+    function roundToStep(value,step,mode){const down=Math.floor(value/step)*step; const up=Math.ceil(value/step)*step; if(mode==='down') return down; if(mode==='up') return up; return (value-down<=up-value)?down:up}
+
+    function breakdownPerSide(targetPerSideLb){
+      let remaining=Math.max(0,targetPerSideLb); const plates=PLATES_LB.slice().sort((a,b)=>b-a);
+      const step=gcdArray(plates); remaining=roundToStep(remaining,step,state.round);
+      const res=[]; for(const p of plates){ if(remaining>=p-1e-9){const c=Math.floor(remaining/p); if(c>0){res.push([p,c]); remaining-=c*p;}} }
+      return res;
+    }
+
+    function pulse(el){el.classList.add('pulse'); setTimeout(()=>el.classList.remove('pulse'),180)}
+
+    bindSegmented('#segUnits', v=>{state.units=v; renderPlatePicker(); renderList();});
+    bindSegmented('#segBar', v=>{state.bar=Number(v); renderList();});
+    bindSegmented('#segRound', v=>{state.round=v});
+
+    $('#addPlate').addEventListener('click',()=>{const lb=Number($('#platePicker').value); state.oneSidePlates.push(lb); renderList();})
+    $('#clearPlates').addEventListener('click',()=>{state.oneSidePlates=[]; renderList();})
+
+    (function(){const values=[50,55,60,65,70,75,80,85,90,95]; const host=$('#presetChips'); host.innerHTML=values.map(v=>`<button class="chip" data-v="${v}%">${v}%</button>`).join(''); host.addEventListener('click',e=>{const b=e.target.closest('.chip'); if(!b) return; host.querySelectorAll('.chip').forEach(x=>x.classList.remove('chip--on')); b.classList.add('chip--on'); $('#percent').value=parseInt(b.textContent); $('#calcRM').click();});})();
+
+    $('#calcRM').addEventListener('click',()=>{
+      const rm=Number(fromUnits(Number($('#rm').value||0))); const pct=Number($('#percent').value||0)/100; if(!rm||!pct){return}
+      const targetTotalLb=rm*pct; const perSideRaw=Math.max(0,(targetTotalLb-state.bar)/2);
+      const perSidePlan=breakdownPerSide(perSideRaw); const perSideLb=perSidePlan.reduce((a,[p,c])=>a+p*c,0); const finalTotalLb=perSideLb*2+state.bar;
+      const unit=state.units;
+      $('#rmTarget').textContent=fmt(toUnits(targetTotalLb),unit); pulse($('#rmTarget'));
+      $('#perSideWeight').textContent=fmt(toUnits(perSideLb),unit); pulse($('#perSideWeight'));
+      const breakdownText=perSidePlan.length? perSidePlan.map(([p,c])=>`${c}×${unit==='lb'?p:(p*0.45359237).toFixed(2)}${unit}`).join(', '):'—';
+      $('#perSideBreakdown').textContent=breakdownText; pulse($('#perSideBreakdown'));
+      $('#rmTotal').textContent=fmt(toUnits(finalTotalLb),unit); pulse($('#rmTotal'));
+      updatePrintArea({rm,pct,targetTotalLb,barLb:state.bar,perSideLb,perSidePlan,finalTotalLb});
+    })
+
+    function updatePrintArea({rm,pct,targetTotalLb,barLb,perSideLb,perSidePlan,finalTotalLb}){
+      const unit=state.units; const list=perSidePlan.map(([p,c])=>`<li>${c}× ${(unit==='lb'?p:(p*0.45359237).toFixed(2))} ${unit}</li>`).join('')||'<li>—</li>';
+      $('#printArea').innerHTML=`<div class="kpi-grid"><div class="kpi-card"><span>Barra</span><strong>${fmt(toUnits(barLb),unit)}</strong></div><div class="kpi-card"><span>Objetivo</span><strong>${fmt(toUnits(targetTotalLb),unit)} (${(pct*100).toFixed(0)}%)</strong></div><div class="kpi-card"><span>Por lado</span><strong>${fmt(toUnits(perSideLb),unit)}</strong></div><div class="kpi-card"><span>Total</span><strong>${fmt(toUnits(finalTotalLb),unit)}</strong></div></div><ul style="margin-top:8px">${list}</ul>`
+    }
+
+    $('#printSummary').addEventListener('click',()=>window.print());
+    $('#printRM').addEventListener('click',()=>window.print());
+
+    const root=document.documentElement; const pref=localStorage.getItem('theme'); if(pref==='light'){root.classList.add('theme-light')}
+    document.getElementById('themeToggle').addEventListener('click',()=>{root.classList.toggle('theme-light'); localStorage.setItem('theme', root.classList.contains('theme-light')?'light':'dark')});
+    const s=document.createElement('style'); s.textContent='.theme-light{--bg:#ffffff;--surface:#f8fafc;--surface-2:#ffffff;--text:#0b1220;--muted:#475569}'; document.head.appendChild(s);
+
+    if('serviceWorker' in navigator){ addEventListener('load',()=>navigator.serviceWorker.register('sw.js')); }
+
+    (function init(){
+      renderPlatePicker(); renderList();
+      let dp=null; window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); dp=e; document.getElementById('installBtn').style.display='inline-flex';});
+      document.getElementById('installBtn').addEventListener('click', async ()=>{ if(!dp) return; dp.prompt(); await dp.userChoice; dp=null; });
+    })();
+  </script>
+</body>
+</html>
